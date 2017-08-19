@@ -1,5 +1,6 @@
 from numpy import *
 import numpy as numpylib
+from kNN import *
 
 
 def loadDataSet(filename):
@@ -66,7 +67,7 @@ def smoSimple(dataMatIn,classLabels,C,toler,maxIter):
         print("iteration number:%d" % iter)
     return b,alphas
 class optStruct:
-    def __init__(self,dataMatIn,classLabels,C,toler):
+    def __init__(self,dataMatIn,classLabels,C,toler,kTup):
         self.X = dataMatIn
         self.labelMat = classLabels
         self.C = C
@@ -75,9 +76,12 @@ class optStruct:
         self.alphas = mat(zeros((self.m,1)))
         self.b = 0
         self.eCache = mat(zeros((self.m,2)))
+        self.K = mat(zeros((self.m,self.m)))
+        for i in range(self.m):
+            self.K[:,i] = kernelTrans(self.X,self.X[i,:],kTup)
 
 def calcEk(oS,k):
-    fXk = float(multiply(oS.alphas,oS.labelMat).T * (oS.X * oS.X[k,:].T)) + oS.b
+    fXk = float(multiply(oS.alphas,oS.labelMat).T * oS.K[:,k] + float(oS.b))
     Ek = fXk - float(oS.labelMat[k])
     return Ek
 
@@ -116,21 +120,121 @@ def innerL(i,oS):
             L = max(0,oS.alphas[j] + oS.alphas[i] - oS.C)
             H = min(oS.C,oS.alphas[j] - oS.alphas[i])
         if L == H: print("L == H");return 0
-        eta = 2.0 * oS.X[i,:]*oS.X[j,:].T - oS.X[i,:] * oS.X[i,:].T - oS.X[j,:]*oS.X[j,:].T
+        eta = 2.0 * oS.K[i,j] - oS.K[i,i] - oS.K[j,j]
         if eta >= 0: print("eta >= 0"); return 0
         oS.alphas[j] -= oS.labelMat[j] * (Ei - Ej) / eta
         oS.alphas[j] = clipAlpha(oS.alphas[j],H,L)
         updateEk(oS,j)
         if (abs(oS.alphas[j] - alphaJold) < 0.0001):
            print("j not moving enough"); return 0
-        b1 = oS.b - Ei - oS.labelMat[i]*(oS.alphas[i]-alphaIold)*oS.X[i,:]*oS.X[i,:].T - oS.labelMat[j]*(oS.alphas[j] - alphaJold) * oS.X[i,:] * oS.X[j,:].T
-        b2 = oS.b - Ej - oS.labelMat[i]*(oS.alphas[i]-alphaIold)*oS.X[i,:]*oS.X[j,:].T - oS.labelMat[j]*(oS.alphas[j] - alphaJold) * oS.X[j,:] * oS.X[j,:].T
+        b1 = oS.b - Ei - oS.labelMat[i]*(oS.alphas[i]-alphaIold)*oS.K[i,i] - oS.labelMat[j]*(oS.alphas[j] - alphaJold) * oS.K[i,j]
+        b2 = oS.b - Ej - oS.labelMat[i]*(oS.alphas[i]-alphaIold)*oS.K[i,j] - oS.labelMat[j]*(oS.alphas[j] - alphaJold) * oS.K[j,j]
         if (0 < oS.alphas[i]) and (oS.C > oS.alphas[i]): oS.b = b1
         elif (0 < oS.alphas[j]) and (oS.C > oS.alphas[j]): oS.b = b2
         else: oS.b = (b1 + b2) / 2.0
         return 1
     else:
         return 0
+
+def smoP(dataMatIn,classLabels,C,toler,maxIter,kTup=('lin',0)):
+    oS = optStruct(mat(dataMatIn),mat(classLabels).transpose(),C,toler,kTup)
+    iter = 0
+    entireSet = True; alphaPairsChanged = 0
+    while (iter < maxIter) and ((alphaPairsChanged > 0) or (entireSet)):
+        alphaPairsChanged = 0
+        if entireSet:
+            for i in range(oS.m):
+                alphaPairsChanged += innerL(i,oS)
+            print("fullSet,iter: %d i:%d, pairs changed %d" % (iter,i,alphaPairsChanged))
+            iter += 1
+        else:
+            nonBoundIs = numpylib.nonzero((oS.alphas.A > 0) * (oS.alphas.A < C))[0]
+            for i in nonBoundIs:
+                alphaPairsChanged += innerL(i,oS)
+                print("non-bound,iter:%d i:%d,pairs changed %d" % (iter,i,alphaPairsChanged))
+            iter += 1
+
+        if entireSet : entireSet = False
+        elif (alphaPairsChanged == 0): entireSet = True
+        print("iteration number: %d" % iter)
+    return oS.b,oS.alphas
+
+def kernelTrans(X,A,kTup):
+    m,n = shape(X)
+    K = mat(zeros((m,1)))
+    if kTup[0] == 'lin': K = X * A.T
+    elif kTup[0] == 'rbf':
+        for j in range(m):
+            deltaRow = X[j,:] - A
+            K[j] = deltaRow * deltaRow.T
+        K = exp(K / -1*kTup[1]**2)
+    else: raise NameError("Houston We have a Problem - - That Kernel is not recognized")
+    return K
+
+def testRbf(k1=1.3):
+    dataArr,labelArr = loadDataSet("testSetRBF.txt")
+    b,alphas = smoP(dataArr,labelArr,200,0.0001,10000,("rbf",k1))
+    dataMat = mat(dataArr);labelMat = mat(labelArr).transpose()
+    svInd = numpylib.nonzero(alphas.A > 0)[0]
+    sVs = dataMat[svInd]
+    labelSV = labelMat[svInd]
+    print("there ar %d Support Vectors" % shape(sVs)[0])
+    m,n = shape(dataMat)
+    errorCount = 0
+    for i in range(m):
+        kernelEval = kernelTrans(sVs,dataMat[i,:],("rbf",k1))
+        predict = kernelEval.T * multiply(labelSV,alphas[svInd]) + b
+        if sign(predict) != sign(labelArr[i]): errorCount += 1
+    print("the training error rate is:%f" % (float(errorCount) / m))
+    dataArr,labelArr = loadDataSet("testSetRBF2.txt")
+    errorCount = 0
+    dataMat = mat(dataArr); labelMat = mat(labelArr).transpose()
+    m,n = shape(dataMat)
+    for i in range(m):
+        kernelEval = kernelTrans(sVs,dataMat[i,:],("rbf",k1))
+        predict = kernelEval.T * multiply(labelSV,alphas[svInd]) + b
+        if sign(predict) != sign(labelArr[i]): errorCount += 1
+    print("the test error rate is: %f" % (float(errorCount) / m))
+
+def loadImages(dirName):
+    from os import listdir
+    hwLabels = []
+    trainingFileList = listdir(dirName)
+    m = len(trainingFileList)
+    trainingMat = zeros((m,1024))
+    for i in range(m):
+        fileNameStr = trainingFileList[i]
+        fileStr = fileNameStr.split('.')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        if classNumStr == 9: hwLabels.append(-1)
+        else: hwLabels.append(1)
+        trainingMat[i,:] = img2vector('%s/%s' % (dirName,fileNameStr))
+    return trainingMat,hwLabels
+
+def testDigits(kTup=('rbf',10)):
+    dataArr,labelArr = loadImages('digits/trainingDigits')
+    b,alphas = smoP(dataArr,labelArr,200,0.0001,10000,kTup)
+    dataMat = mat(dataArr); labelMat = mat(labelArr).transpose()
+    svInd = nonzero(alphas.A > 0)[0]
+    sVs = dataMat[svInd]
+    labelSV = labelMat[svInd];
+    print("there are %d Support Vectors" % shape(sVs)[0])
+    m,n = shape(dataMat)
+    errorCount = 0
+    for i in range(0):
+        kernelEval = kernelTrans(sVs,dataMat[i,:],kTup)
+        predict = kernelEval.T * multiply(labelSV,alphas[svInd]) + b
+        if sign(predict) != sign(labelArr[i]): errorCount += 1
+    print("the training error rate is:%f" % (float(errorCount) / m))
+    dataArr,labelArr = loadImages('testDigits')
+    errorCount = 0
+    dataMat = mat(dataArr); labelMat = mat(labelArr).transpose()
+    m,n = shape(m)
+    for i in range(0):
+        kernelEval = kernelTrans(sVs,dataMat[i,:],kTup)
+        predict = kernelEval.T * multiply(labelSV,alphas[svInd]) + b
+        if sign(predict) != sign(labelArr[i]): errorCount += 1
+    print("the test error rate is: %f" % (float(errorCount) / m))
 if __name__ == '__main__':
-    dataArr,labelArr = loadDataSet("testSetSvm.txt")
-    b,alphas = smoSimple(dataArr,labelArr,0.6,0.001,40)
+    testRbf()
+    testDigits(('rbf',20))
