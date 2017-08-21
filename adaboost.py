@@ -8,6 +8,7 @@ def loadSimpData():
     [1,1],
     [2,1]])
     classLabels = [1.0,1.0,-1.0,-1.0,1.0]
+    return dataMat,classLabels
 
 def stumpClassify(dataMatrix,dimen,threshVal,threshIneq):
     retArray = ones((shape(dataMatrix)[0],1))
@@ -40,3 +41,8 @@ def buildStump(dataArr,classLabels,D):
                     bestStump['thresh'] = threshVal
                     bestStump['ineq'] = inequal
     return bestStump,minError,bestClassEst
+
+if __name__ == '__main__':
+    dataMat,classLabels = loadSimpData()
+    D = mat(ones((5,1)) / 5)
+    buildStump(dataMat,classLabels,D)
