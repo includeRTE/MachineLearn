@@ -63,6 +63,22 @@ def adaBoostTrainDS(dataArr,classLabels,numIt = 40):
         print("total error:",errorRate,"\n")
         if errorRate == 0.0: break
     return weakClassArr
+
+def adaClassify(dataToClass,classifierArr):
+    dataMatrix = mat(dataToClass)
+    m = shape(dataMatrix)[0]
+    aggClassEst = mat(zeros((m,1)))
+    for i in range(len(classifierArr)):
+        classEst = stumpClassify(dataMatrix,classifierArr[i]['dim'],classifierArr[i]['thresh'],classifierArr[i]['ineq'])
+        aggClassEst += classifierArr[i]['alpha']*classEst
+        print(aggClassEst)
+    return sign(aggClassEst)
+
+def loadDataSet(fileName):
+    numFeat = len(open(fileName).readline().split('\t'))
+    dataMat = []; labelMat = []
+    
 if __name__ == '__main__':
     dataMat,classLabels = loadSimpData()
     classifierArray = adaBoostTrainDS(dataMat,classLabels,9)
+    adaClassify([0,0],classifierArray)
