@@ -39,13 +39,13 @@ def train(mnist):
     
     variables_averages_op = variable_averages.apply(tf.trainable_variables())
     average_y = inference(x,variable_averages,weights1,biases1,weights2,biases2)
-    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = y,logits = tf.argmax(y_,1))
+    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels = tf.argmax(y_,1),logits = y)
     cross_entropy_mean = tf.reduce_mean(cross_entropy)
 
     regularzier = tf.contrib.layers.l2_regularizer(REGULARZATION_RATE)
-    regularization = regularzier(weights1) + regularization(weights2)
+    regularization = regularzier(weights1) + regularzier(weights2)
     loss = cross_entropy_mean + regularization
-    learning_rate = tf.train.exponential_decay(LEARNING_RATE_BASE,global_step,mnist.num_examples / BATCH_SIZE,LEARNING_RATE_DECAY)
+    learning_rate = tf.train.exponential_decay(LEARNING_RATE_BASE,global_step,mnist.train.num_examples / BATCH_SIZE,LEARNING_RATE_DECAY)
     train_step = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss,global_step=global_step)
  
     with tf.control_dependencies([train_step,variables_averages_op]):
