@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{f6f462ec-313a-4724-9e5f-210d33e73ac1}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>logRegres.py</StartupFile>
+    <StartupFile>tensorflow_MNIST.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -36,7 +36,12 @@
     <Compile Include="logRegres.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="mnist_infernece.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="svmMLiA.py" />
+    <Compile Include="tensorflowtest.py" />
+    <Compile Include="tensorflow_MNIST.py" />
     <Compile Include="trees.py">
       <SubType>Code</SubType>
     </Compile>
