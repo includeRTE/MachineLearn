@@ -6,7 +6,11 @@
     <ProjectGuid>{f6f462ec-313a-4724-9e5f-210d33e73ac1}</ProjectGuid>
     <ProjectHome />
     <StartupFile>tensorflow_MNIST.py</StartupFile>
+<<<<<<< HEAD
     <SearchPath>D:\Programs\Python\Python36</SearchPath>
+=======
+    <SearchPath />
+>>>>>>> bddad87ba495b6d4486cda91fe36198e27a98145
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
@@ -41,6 +45,7 @@
     <Compile Include="logRegres.py">
       <SubType>Code</SubType>
     </Compile>
+<<<<<<< HEAD
     <Compile Include="regression.py">
       <SubType>Code</SubType>
     </Compile>
@@ -51,6 +56,14 @@
     <Compile Include="tensorflow_MNIST.py">
       <SubType>Code</SubType>
     </Compile>
+=======
+    <Compile Include="mnist_infernece.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="svmMLiA.py" />
+    <Compile Include="tensorflowtest.py" />
+    <Compile Include="tensorflow_MNIST.py" />
+>>>>>>> bddad87ba495b6d4486cda91fe36198e27a98145
     <Compile Include="trees.py">
       <SubType>Code</SubType>
     </Compile>

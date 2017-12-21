@@ -30,6 +30,12 @@
     <ClInclude Include="Funcions.h">
       <Filter>util</Filter>
     </ClInclude>
+    <ClInclude Include="TemplateDelegate.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="COMMONALLOC.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -40,6 +46,9 @@
     </ClCompile>
     <ClCompile Include="Funcions.cpp">
       <Filter>util</Filter>
+    </ClCompile>
+    <ClCompile Include="TemplateDelegate.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
