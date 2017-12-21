@@ -26,7 +26,7 @@ def seqPegasos(dataSet, labels, lam, T):
             w = (1.0 - 1/t)*w + eta*labels[i]*dataSet[i,:]
         else:
             w = (1.0 - 1/t)*w
-        print w
+        print(w)
     return w
         
 def predict(w, x):

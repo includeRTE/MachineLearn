@@ -25,7 +25,7 @@ def map(key, value):
  
    # note: a single constant key "producedkey" sends to only one reducer
    # somewhat "atypical" due to low degree of parallism on reducer side
-   print "producedkey\t%s" % (producedvalue)
+   print("producedkey\t%s" % (producedvalue))
    
 def reduce(key, values, mu=0.1):
   sumETE = None
@@ -49,4 +49,4 @@ def reduce(key, values, mu=0.1):
     # note: omega = result[:-1] and gamma = result[-1]
     # but printing entire vector as output
     result = sumETE.I*sumETDe
-    print "%s\t%s" % (key, str(result.tolist()))
+    print("%s\t%s" % (key, str(result.tolist())))

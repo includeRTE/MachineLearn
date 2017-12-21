@@ -87,9 +87,9 @@ def printMat(inMat, thresh=0.8):
     for i in range(32):
         for k in range(32):
             if float(inMat[i,k]) > thresh:
-                print 1,
-            else: print 0,
-        print ''
+                print(1),
+            else: print(0),
+        print('')
 
 def imgCompress(numSV=3, thresh=0.8):
     myl = []

@@ -93,11 +93,11 @@ def rulesFromConseq(freqSet, H, supportData, brl, minConf=0.7):
 def pntRules(ruleList, itemMeaning):
     for ruleTup in ruleList:
         for item in ruleTup[0]:
-            print itemMeaning[item]
-        print "           -------->"
+            print(itemMeaning[item])
+        print("           -------->")
         for item in ruleTup[1]:
-            print itemMeaning[item]
-        print "confidence: %f" % ruleTup[2]
+            print(itemMeaning[item])
+        print("confidence: %f" % ruleTup[2])
         print       #print a blank line
         
             
